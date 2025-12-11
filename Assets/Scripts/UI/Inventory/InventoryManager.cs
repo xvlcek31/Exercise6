@@ -154,7 +154,8 @@ public class InventoryManager : MonoBehaviour
          * be called.
          */
         
-        
+        mItemCreateButton = itemDetails.Q<Button>("ItemDetailButtonCreate");
+        mItemCreateButton.clicked += () => CreateItem();
         
         
         await UniTask.WaitForEndOfFrame();
@@ -389,10 +390,33 @@ public class InventoryManager : MonoBehaviour
         
         if (item == null)
         { // We have no item selected -> Provide some default information.
+            mItemDetailName.text = "";
+            mItemDetailDescription.text = "Select an item";
+            mItemDetailCost.text = "0";
+            if (mItemCreateButton != null)
+            {
+                mItemCreateButton.SetEnabled(false);
+            }
         }
         else
         { // We have item selected -> Use the item information.
+            mItemDetailName.text = item.definition.readableName;
+            mItemDetailDescription.text = item.definition.readableDescription;
+            mItemDetailCost.text = item.definition.cost.ToString();
+
+            if (mItemCreateButton != null)
+            {
+                if (item.definition.cost > availableCurrency)
+                {
+                    mItemCreateButton.SetEnabled(false);
+                }
+                else
+                {
+                    mItemCreateButton.SetEnabled(true);
+                }
+            }
         }
+        
         
         selectedItem = item;
     }
@@ -424,9 +448,32 @@ public class InventoryManager : MonoBehaviour
          * it from the cost (itemDefinition.cost) from availableCurrency property.
          * These items are not cheap to make!
          */
+
+        if (selectedItem == null)
+        {
+            return false;
+        }
+
+        var itemDefinition = selectedItem.definition;
         
-        var itemDefinition = selectedItem?.definition;
+        try
+        {
+            GameObject instantiatedItem = Instantiate(
+                itemDefinition.prefab, 
+                createDestination.transform.position, 
+                Quaternion.identity, 
+                createDestination.transform
+            );
         
-        return false;
+            availableCurrency -= itemDefinition.cost;
+        
+            UpdateSelectedItem(selectedItem);
+        
+            return true;
+        }
+        catch (Exception)
+        {
+            return false;
+        }
     }
 }

@@ -165,13 +165,14 @@ public class GameManager : MonoBehaviour
 		 *       WebGL memory or just refreshing the page by reloading the 
 		 *       current URL ("OpenURL", "absoluteURL").
          */
+        
        
 #if UNITY_EDITOR
-        // Quitting in Unity Editor: 
+        UnityEditor.EditorApplication.isPlaying = false;
 #elif UNITY_WEBPLAYER
-        // Quitting in the WebGL build: 
+        Application.OpenURL(Application.absoluteURL);
 #else // !UNITY_WEBPLAYER
-        // Quitting in all other builds: 
+        Application.Quit();
 #endif
     }
 }
